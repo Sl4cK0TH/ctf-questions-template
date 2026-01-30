@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ 'Edit' if challenge else 'New' }} Challenge</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="top-bar">
+        <h1>{{ 'Edit' if challenge else 'New' }} Challenge</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="logout-btn">← Back</a>
+    </div>
+
+    <div class="admin-container">
+        <form method="POST" class="challenge-form">
+            <div class="form-section">
+                <h3>Challenge Details</h3>
+
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" name="name" value="{{ challenge.name if challenge else '' }}" required
+                        placeholder="e.g., Pcap-a-Boo">
+                </div>
+
+                <div class="form-group">
+                    <label>Slug (URL)</label>
+                    <input type="text" name="slug" value="{{ challenge.slug if challenge else '' }}" required
+                        placeholder="e.g., pcap-a-boo">
+                    <span class="hint">Will be accessible at /c/slug</span>
+                </div>
+
+                <div class="form-group">
+                    <label>Description (Welcome Text)</label>
+                    <textarea name="description" rows="4"
+                        placeholder="Welcome message shown to participants...">{{ challenge.description if challenge else '' }}</textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Flag</label>
+                        <input type="text" name="flag" value="{{ challenge.flag if challenge else '' }}" required
+                            placeholder="rsuCTF{...}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Passing Score</label>
+                        <input type="number" name="passing_score"
+                            value="{{ challenge.passing_score if challenge else 0 }}" min="0">
+                        <span class="hint">0 = All questions required</span>
+                    </div>
+                </div>
+
+                {% if challenge %}
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" name="is_active" {{ 'checked' if challenge.is_active else '' }}>
+                        Active (visible to participants)
+                    </label>
+                </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-submit">{{ 'Save Changes' if challenge else 'Create Challenge'
+                    }}</button>
+            </div>
+        </form>
+
+        {% if challenge %}
+        <div class="form-section questions-section">
+            <div class="section-header">
+                <h3>Questions</h3>
+                <button type="button" class="btn btn-add" onclick="addQuestion()">+ Add Question</button>
+            </div>
+
+            <div id="questions-list">
+                {% for q in questions %}
+                <div class="question-item" data-id="{{ q.id }}">
+                    <div class="question-header">
+                        <span class="drag-handle">⋮⋮</span>
+                        <span class="q-num">#{{ loop.index }}</span>
+                        <button type="button" class="btn-delete" onclick="deleteQuestion({{ q.id }})">×</button>
+                    </div>
+                    <div class="question-body">
+                        <input type="text" class="q-text" value="{{ q.question }}" placeholder="Question text...">
+                        <input type="text" class="q-answer" value="{{ q.answer }}" placeholder="Correct answer...">
+                        <select class="q-match">
+                            <option value="exact" {{ 'selected' if q.match_type=='exact' else '' }}>Exact Match</option>
+                            <option value="case_insensitive" {{ 'selected' if q.match_type=='case_insensitive' else ''
+                                }}>Case Insensitive</option>
+                            <option value="contains" {{ 'selected' if q.match_type=='contains' else '' }}>Contains
+                            </option>
+                        </select>
+                        <button type="button" class="btn btn-save-q" onclick="saveQuestion({{ q.id }})">Save</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-section danger-zone">
+            <h3>Danger Zone</h3>
+            <form method="POST" action="{{ url_for('admin.delete_challenge', challenge_id=challenge.id) }}"
+                onsubmit="return confirm('Are you sure? This will delete the challenge and all its questions.')">
+                <button type="submit" class="btn btn-danger">Delete Challenge</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        const challengeId = {{ challenge.id if challenge else 'null' }};
+    </script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+
+</html>

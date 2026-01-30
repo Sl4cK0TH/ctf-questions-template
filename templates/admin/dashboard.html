@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="top-bar">
+        <h1>CTF Admin Dashboard</h1>
+        <a href="{{ url_for('admin.logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h2>Challenges</h2>
+            <a href="{{ url_for('admin.new_challenge') }}" class="btn btn-submit">+ New Challenge</a>
+        </div>
+
+        <div class="challenge-list">
+            {% if challenges %}
+            {% for c in challenges %}
+            <div class="challenge-card">
+                <div class="challenge-info">
+                    <h3>{{ c.name }}</h3>
+                    <span class="slug">/c/{{ c.slug }}</span>
+                    <span class="status {% if c.is_active %}active{% else %}inactive{% endif %}">
+                        {{ 'Active' if c.is_active else 'Inactive' }}
+                    </span>
+                </div>
+                <div class="challenge-actions">
+                    <a href="{{ url_for('admin.edit_challenge', challenge_id=c.id) }}" class="btn btn-edit">Edit</a>
+                    <a href="/c/{{ c.slug }}" target="_blank" class="btn btn-preview">Preview</a>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <p>No challenges yet. Create your first challenge!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>

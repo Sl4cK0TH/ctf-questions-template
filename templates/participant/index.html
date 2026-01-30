@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CTF Challenges</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="top-bar">
+        <h1>CTF Analysis Challenges</h1>
+    </div>
+
+    <div class="challenges-grid">
+        {% if error %}
+        <div class="error-banner">{{ error }}</div>
+        {% endif %}
+
+        {% if challenges %}
+        {% for c in challenges %}
+        <a href="/c/{{ c.slug }}" class="challenge-card-link">
+            <div class="challenge-card participant">
+                <h3>{{ c.name }}</h3>
+                <p class="challenge-desc">{{ c.description[:100] }}{{ '...' if c.description|length > 100 else '' }}</p>
+                <span class="start-btn">Start Challenge →</span>
+            </div>
+        </a>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <h2>No Challenges Available</h2>
+            <p>Check back soon for new challenges!</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+
+</html>

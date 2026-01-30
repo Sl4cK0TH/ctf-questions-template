@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="top-bar">
+        <h1>CTF Admin</h1>
+    </div>
+
+    <div class="login-container">
+        <div class="login-box">
+            <h2>Admin Access</h2>
+            {% if error %}
+            <div class="error-msg">{{ error }}</div>
+            {% endif %}
+            <form method="POST">
+                <input type="password" name="password" placeholder="Enter admin password" required>
+                <button type="submit" class="btn btn-submit">Login</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

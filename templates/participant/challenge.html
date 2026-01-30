@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ challenge.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <div class="tutorial-backdrop" id="tutorialBackdrop"></div>
+    <div class="tutorial-tooltip" id="tutorialTooltip">
+        <h3 id="t-title">Title</h3>
+        <p id="t-desc">Description</p>
+        <button class="tutorial-btn-next" onclick="nextTutorialStep()">Next &gt;</button>
+    </div>
+
+    <div class="top-bar">
+        <h1>{{ challenge.name }}</h1>
+    </div>
+
+    <div class="container">
+        <div class="sidebar" id="sidebarArea">
+            <ul class="question-list">
+                {% for q in questions %}
+                <li class="q-item" onclick="selectQuestion({{ q.id }})" id="nav-{{ q.id }}">
+                    <span>Analysis Question #{{ loop.index }}</span>
+                    <div class="status-dot" id="dot-{{ q.id }}"></div>
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="sidebar-footer" id="submitArea">
+                <button class="btn btn-submit" id="submitBtn" onclick="submitAnalysis()">Submit Analysis</button>
+                <button class="btn btn-flag" id="flagBtn" onclick="showFlagPanel()">Get Flag</button>
+            </div>
+        </div>
+
+        <div class="display-panel">
+
+            {% for q in questions %}
+            <div class="content-box" id="panel-{{ q.id }}">
+                <div class="panel-header">
+                    <button class="btn-nav {% if loop.first %}disabled{% endif %}"
+                        onclick="selectQuestion({{ questions[loop.index0 - 1].id if loop.index0 > 0 else 0 }})">
+                        &lt; Previous
+                    </button>
+                    <h2>Question {{ loop.index }}</h2>
+                    <button class="btn-nav {% if loop.last %}disabled{% endif %}"
+                        onclick="selectQuestion({{ questions[loop.index0 + 1].id if loop.index0 < questions|length - 1 else 0 }})">
+                        Next &gt;
+                    </button>
+                </div>
+
+                <div class="question-text">{{ q.question }}</div>
+
+                <div class="input-row" id="input-row-{{ q.id }}">
+                    <button class="btn-edit" id="btn-edit-{{ q.id }}" onclick="enableEdit({{ q.id }})"
+                        title="Edit Answer">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                        </svg>
+                    </button>
+
+                    <div class="input-wrapper">
+                        <input type="text" id="input-{{ q.id }}" placeholder="Enter finding..."
+                            onkeydown="handleEnter({{ q.id }}, event)">
+                        <button class="btn-inner-submit" id="btn-submit-{{ q.id }}" onclick="markAsPending({{ q.id }})"
+                            title="Submit Draft">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 10px; font-size: 12px; color: var(--text-muted); padding-left: 50px;">
+                    <span id="msg-{{ q.id }}"></span>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="content-box" id="panel-flag">
+                <div id="flag-display" style="display: block;">
+                    <h2 style="color: var(--success); text-align: center;">Analysis Complete</h2>
+                    <p>All forensic indicators have been verified. Access granted.</p>
+                    <div class="flag-box" id="flag-text">LOADING...</div>
+                    <button class="btn btn-submit" onclick="copyFlag()">Copy Flag</button>
+                </div>
+            </div>
+
+            <div class="content-box active" id="panel-welcome">
+                <h2 style="color: var(--accent); text-align: center;">Welcome Agent</h2>
+                <p style="text-align: center;">{{ challenge.description or 'You have been assigned to investigate this
+                    challenge.' }}</p>
+                <p style="color: var(--text-muted); font-size: 14px; text-align: center; margin-bottom: 30px;">
+                    Passing Criteria: {{ challenge.passing_score if challenge.passing_score > 0 else questions|length
+                    }}/{{ questions|length }} Questions
+                </p>
+
+                <div style="display: flex; justify-content: center; gap: 15px;">
+                    <button class="btn btn-tutorial" style="width: auto; padding: 10px 30px;" onclick="startTutorial()">
+                        Review Tutorial
+                    </button>
+
+                    <button class="btn btn-submit" onclick="selectQuestion({{ questions[0].id if questions else 0 }})"
+                        style="width: auto; padding: 10px 30px;">
+                        Start Analysis
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const challengeSlug = "{{ challenge.slug }}";
+        const questionIds = [{% for q in questions %}{ { q.id } } {% if not loop.last %}, {% endif %} {% endfor %}];
+        const totalQuestions = {{ questions| length }};
+        const requiredScore = {{ challenge.passing_score if challenge.passing_score > 0 else questions | length }};
+    </script>
+    <script src="{{ url_for('static', filename='js/participant.js') }}"></script>
+</body>
+
+</html>

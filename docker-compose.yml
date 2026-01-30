@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: ctf_analysis_template
+    ports:
+      - "5000:5000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-super-secret-key-change-me}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - ADMIN_URL_SECRET=${ADMIN_URL_SECRET:-7x9k2m}
+    volumes:
+      - ./database.db:/app/database.db
+    restart: always
