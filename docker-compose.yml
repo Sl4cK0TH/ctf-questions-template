@@ -5,7 +5,7 @@ services:
     build: .
     container_name: ctf_analysis_template
     ports:
-      - "5000:5000"
+      - "13512:13512"
     environment:
       - SECRET_KEY=${SECRET_KEY:-super-secret-key-change-me}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
