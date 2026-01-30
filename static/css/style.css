@@ -467,11 +467,18 @@ input.wrong {
 
 /* --- ADMIN DASHBOARD --- */
 .admin-container {
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 40px 20px;
     overflow-y: auto;
     flex: 1;
+    /* Hide scrollbar but keep functionality */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.admin-container::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Opera */
 }
 
 .admin-header {
@@ -538,6 +545,38 @@ input.wrong {
 .challenge-actions {
     display: flex;
     gap: 10px;
+    align-items: center;
+}
+
+.challenge-actions .btn-edit-admin {
+    background-color: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    width: auto;
+    padding: 8px 16px;
+    position: static;
+    visibility: visible;
+    opacity: 1;
+    height: auto;
+    border-radius: 6px;
+}
+
+.challenge-actions .btn-edit-admin:hover {
+    background-color: var(--accent);
+    color: #151c2b;
+}
+
+.challenge-actions .btn-delete-card {
+    background-color: transparent;
+    color: var(--error);
+    border: 1px solid var(--error);
+    width: auto;
+    padding: 8px 16px;
+}
+
+.challenge-actions .btn-delete-card:hover {
+    background-color: var(--error);
+    color: white;
 }
 
 .empty-state {
