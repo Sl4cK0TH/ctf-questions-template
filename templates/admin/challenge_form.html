@@ -68,10 +68,7 @@
 
         {% if challenge %}
         <div class="form-section questions-section">
-            <div class="section-header">
-                <h3>Questions</h3>
-                <button type="button" class="btn btn-add" onclick="addQuestion()">+ Add Question</button>
-            </div>
+            <h3>Questions</h3>
 
             <div id="questions-list">
                 {% for q in questions %}
@@ -96,6 +93,9 @@
                 </div>
                 {% endfor %}
             </div>
+
+            <button type="button" class="btn btn-add" onclick="addQuestion()" style="margin-top: 15px;">+ Add
+                Question</button>
         </div>
 
         <div class="form-section danger-zone">
