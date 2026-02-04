@@ -196,6 +196,7 @@ body::before {
 
 .sidebar {
     width: 320px;
+    height: calc(100vh - 70px);
     background: var(--panel-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -205,17 +206,16 @@ body::before {
     z-index: 10;
     position: relative;
     flex-shrink: 0;
-    overflow: hidden;
 }
 
 .question-list {
-    flex: 1;
+    flex: 1 1 auto;
     overflow-y: auto;
     overflow-x: hidden;
     list-style: none;
     padding: 12px;
     min-height: 0;
-    scrollbar-gutter: stable;
+    max-height: calc(100vh - 70px - 85px); /* viewport - topbar - footer */
 }
 
 .q-item {
@@ -295,9 +295,11 @@ body::before {
 .sidebar-footer {
     padding: 20px;
     border-top: 1px solid var(--border);
-    background: rgba(10, 14, 23, 0.8);
+    background: rgba(10, 14, 23, 0.95);
     flex-shrink: 0;
-    margin-top: auto;
+    position: sticky;
+    bottom: 0;
+    width: 100%;
 }
 
 /* ========================================
@@ -1321,16 +1323,17 @@ body.admin-page {
     
     .sidebar {
         width: 100%;
-        height: auto;
-        min-height: 120px;
-        max-height: 35vh;
+        height: 40vh;
+        max-height: 40vh;
+        min-height: 150px;
         border-right: none;
         border-bottom: 1px solid var(--border);
         flex-shrink: 0;
     }
     
     .question-list {
-        max-height: calc(35vh - 80px);
+        max-height: calc(40vh - 85px);
+        flex: 1;
     }
     
     .display-panel {
