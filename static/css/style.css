@@ -1047,8 +1047,9 @@ body.admin-page {
 
 .challenges-grid {
     max-width: 1200px;
-    margin: 48px auto;
-    padding: 0 24px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    padding-top: 48px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 24px;
@@ -1056,19 +1057,28 @@ body.admin-page {
     flex: 1;
     position: relative;
     z-index: 1;
+    align-content: start;
 }
 
 .challenge-card-link {
     text-decoration: none;
     display: block;
+    height: 200px;
 }
 
 .challenge-card.participant {
-    display: block;
+    display: flex;
+    flex-direction: column;
     padding: 28px;
+    height: 100%;
     transition: var(--transition-normal);
     position: relative;
     overflow: hidden;
+    background: var(--panel-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
 }
 
 .challenge-card.participant::before {
@@ -1109,6 +1119,11 @@ body.admin-page {
     font-size: 0.9rem;
     line-height: 1.6;
     margin: 12px 0 20px 0;
+    flex: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
 }
 
 .challenge-card.participant .start-btn {
@@ -1301,7 +1316,11 @@ body.admin-page {
     
     .challenges-grid {
         grid-template-columns: 1fr;
-        padding: 0 16px;
+        padding: 32px 16px;
+    }
+    
+    .challenge-card-link {
+        height: 180px;
     }
     
     .btn-nav {
