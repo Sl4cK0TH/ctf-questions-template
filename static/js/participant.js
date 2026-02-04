@@ -178,9 +178,11 @@ function startTutorial() {
 function positionTooltip(targetEl, position) {
     const tooltip = document.getElementById('tutorialTooltip');
     const rect = targetEl.getBoundingClientRect();
-    const tooltipWidth = 340;
-    const tooltipHeight = tooltip.offsetHeight || 180;
+    const tooltipWidth = Math.min(340, window.innerWidth - 40);
+    const tooltipHeight = tooltip.offsetHeight || 200;
     const padding = 20;
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
 
     // Reset all positioning
     tooltip.style.top = 'auto';
@@ -189,29 +191,59 @@ function positionTooltip(targetEl, position) {
     tooltip.style.bottom = 'auto';
     tooltip.style.transform = 'none';
 
+    let top, left;
+
     switch (position) {
         case 'right':
-            tooltip.style.top = Math.max(padding, rect.top + (rect.height / 2) - (tooltipHeight / 2)) + 'px';
-            tooltip.style.left = (rect.right + padding) + 'px';
+            top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+            left = rect.right + padding;
+            
+            // If tooltip goes off right edge, try left side
+            if (left + tooltipWidth > viewportWidth - padding) {
+                left = rect.left - tooltipWidth - padding;
+            }
+            // If still off screen, center it
+            if (left < padding) {
+                left = (viewportWidth - tooltipWidth) / 2;
+                top = rect.bottom + padding;
+            }
             break;
+            
         case 'left':
-            tooltip.style.top = Math.max(padding, rect.top + (rect.height / 2) - (tooltipHeight / 2)) + 'px';
-            tooltip.style.left = Math.max(padding, rect.left - tooltipWidth - padding) + 'px';
+            top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+            left = rect.left - tooltipWidth - padding;
+            
+            if (left < padding) {
+                left = rect.right + padding;
+            }
             break;
+            
         case 'top':
-            tooltip.style.top = Math.max(padding, rect.top - tooltipHeight - padding) + 'px';
-            tooltip.style.left = Math.max(padding, Math.min(window.innerWidth - tooltipWidth - padding, rect.left + (rect.width / 2) - (tooltipWidth / 2))) + 'px';
+            top = rect.top - tooltipHeight - padding;
+            left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+            
+            // If goes above viewport, show below
+            if (top < padding) {
+                top = rect.bottom + padding;
+            }
             break;
+            
         case 'bottom':
-            tooltip.style.top = (rect.bottom + padding) + 'px';
-            tooltip.style.left = Math.max(padding, Math.min(window.innerWidth - tooltipWidth - padding, rect.left + (rect.width / 2) - (tooltipWidth / 2))) + 'px';
+            top = rect.bottom + padding;
+            left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
             break;
+            
         default:
-            // Center of screen fallback
-            tooltip.style.top = '50%';
-            tooltip.style.left = '50%';
-            tooltip.style.transform = 'translate(-50%, -50%)';
+            top = (viewportHeight - tooltipHeight) / 2;
+            left = (viewportWidth - tooltipWidth) / 2;
     }
+
+    // Clamp values to keep tooltip in viewport
+    top = Math.max(padding, Math.min(top, viewportHeight - tooltipHeight - padding));
+    left = Math.max(padding, Math.min(left, viewportWidth - tooltipWidth - padding));
+
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
 }
 
 function showTutorialStep() {
