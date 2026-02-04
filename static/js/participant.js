@@ -147,21 +147,21 @@ function copyFlag() {
 const tutorialSteps = [
     {
         element: 'sidebarArea',
-        title: 'Navigation',
-        desc: 'This sidebar tracks your progress. Navigate between questions here.',
-        position: { top: '50px', left: '320px' }
+        title: 'Navigation Panel',
+        desc: 'This sidebar tracks your progress through all questions. Click any item to navigate directly to that question.',
+        position: 'right'
     },
     {
         element: 'input-row-' + (questionIds[0] || ''),
-        title: 'Drafting Answers',
-        desc: 'Type your answer and press Enter or click the arrow to save as draft (marked yellow).',
-        position: { top: '300px', left: 'auto', right: '10%' }
+        title: 'Answer Input',
+        desc: 'Type your answer here and press Enter or click the send button to save it as a draft (shown in yellow).',
+        position: 'top'
     },
     {
         element: 'submitArea',
         title: 'Submit Analysis',
-        desc: 'Once ready, click here to verify all your answers.',
-        position: { bottom: '100px', left: '320px', top: 'auto' }
+        desc: 'Once you\'ve answered all questions, click this button to verify your answers and get your score.',
+        position: 'right'
     }
 ];
 
@@ -175,6 +175,45 @@ function startTutorial() {
     showTutorialStep();
 }
 
+function positionTooltip(targetEl, position) {
+    const tooltip = document.getElementById('tutorialTooltip');
+    const rect = targetEl.getBoundingClientRect();
+    const tooltipWidth = 340;
+    const tooltipHeight = tooltip.offsetHeight || 180;
+    const padding = 20;
+
+    // Reset all positioning
+    tooltip.style.top = 'auto';
+    tooltip.style.left = 'auto';
+    tooltip.style.right = 'auto';
+    tooltip.style.bottom = 'auto';
+    tooltip.style.transform = 'none';
+
+    switch (position) {
+        case 'right':
+            tooltip.style.top = Math.max(padding, rect.top + (rect.height / 2) - (tooltipHeight / 2)) + 'px';
+            tooltip.style.left = (rect.right + padding) + 'px';
+            break;
+        case 'left':
+            tooltip.style.top = Math.max(padding, rect.top + (rect.height / 2) - (tooltipHeight / 2)) + 'px';
+            tooltip.style.left = Math.max(padding, rect.left - tooltipWidth - padding) + 'px';
+            break;
+        case 'top':
+            tooltip.style.top = Math.max(padding, rect.top - tooltipHeight - padding) + 'px';
+            tooltip.style.left = Math.max(padding, Math.min(window.innerWidth - tooltipWidth - padding, rect.left + (rect.width / 2) - (tooltipWidth / 2))) + 'px';
+            break;
+        case 'bottom':
+            tooltip.style.top = (rect.bottom + padding) + 'px';
+            tooltip.style.left = Math.max(padding, Math.min(window.innerWidth - tooltipWidth - padding, rect.left + (rect.width / 2) - (tooltipWidth / 2))) + 'px';
+            break;
+        default:
+            // Center of screen fallback
+            tooltip.style.top = '50%';
+            tooltip.style.left = '50%';
+            tooltip.style.transform = 'translate(-50%, -50%)';
+    }
+}
+
 function showTutorialStep() {
     document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
 
@@ -185,16 +224,26 @@ function showTutorialStep() {
 
     const step = tutorialSteps[currentStepIndex];
     const el = document.getElementById(step.element);
-    if (el) el.classList.add('tutorial-highlight');
-
-    const tooltip = document.getElementById('tutorialTooltip');
-    tooltip.style.top = step.position.top;
-    tooltip.style.left = step.position.left || 'auto';
-    tooltip.style.right = step.position.right || 'auto';
-    tooltip.style.bottom = step.position.bottom || 'auto';
+    
+    if (el) {
+        el.classList.add('tutorial-highlight');
+        positionTooltip(el, step.position);
+    } else {
+        // Fallback: center the tooltip if element not found
+        const tooltip = document.getElementById('tutorialTooltip');
+        tooltip.style.top = '50%';
+        tooltip.style.left = '50%';
+        tooltip.style.transform = 'translate(-50%, -50%)';
+    }
 
     document.getElementById('t-title').innerText = step.title;
     document.getElementById('t-desc').innerText = step.desc;
+    
+    // Update button text for last step
+    const nextBtn = document.querySelector('.tutorial-btn-next');
+    if (nextBtn) {
+        nextBtn.innerText = currentStepIndex >= tutorialSteps.length - 1 ? 'Finish' : 'Next →';
+    }
 }
 
 function nextTutorialStep() {
