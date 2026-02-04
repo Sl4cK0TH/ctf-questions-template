@@ -8,10 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <!-- Marked.js for Markdown parsing -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- DOMPurify for XSS protection -->
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 </head>
 
 <body>
@@ -59,7 +55,7 @@
                     </button>
                 </div>
 
-                <div class="question-text markdown-content" data-raw="{{ q.question | e }}"></div>
+                <div class="question-text markdown-content">{{ q.question }}</div>
 
                 <div class="input-row" id="input-row-{{ q.id }}">
                     <button class="btn-edit" id="btn-edit-{{ q.id }}" onclick="enableEdit({{ q.id }})"
@@ -101,9 +97,7 @@
 
             <div class="content-box active" id="panel-welcome">
                 <h2 style="color: var(--accent); text-align: center;">Welcome Agent</h2>
-                <div class="welcome-description markdown-content" data-raw="{{ challenge.description | e }}" style="text-align: center; margin-bottom: 20px;">
-                    {{ challenge.description or 'You have been assigned to investigate this challenge.' }}
-                </div>
+                <div class="welcome-description markdown-content" style="text-align: center; margin-bottom: 20px;">{{ challenge.description_html }}</div>
                 <p style="color: var(--text-muted); font-size: 14px; text-align: center; margin-bottom: 30px;">
                     Passing Criteria: {{ challenge.passing_score if challenge.passing_score > 0 else questions|length
                     }}/{{ questions|length }} Questions

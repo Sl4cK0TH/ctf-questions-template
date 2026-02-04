@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
+from markupsafe import Markup
 import models
+from utils import render_markdown
 
 participant_bp = Blueprint('participant', __name__)
 
@@ -19,11 +21,22 @@ def challenge(slug):
                              error='Challenge not found')
     
     questions = models.get_questions_by_challenge(challenge['id'])
-    # Only send question text and IDs, not answers
-    safe_questions = [{'id': q['id'], 'order_num': q['order_num'], 'question': q['question']} for q in questions]
+    # Render markdown for questions and mark as safe HTML
+    safe_questions = [{
+        'id': q['id'], 
+        'order_num': q['order_num'], 
+        'question': Markup(render_markdown(q['question']))
+    } for q in questions]
+    
+    # Render markdown for challenge description
+    challenge_data = dict(challenge)
+    if challenge_data.get('description'):
+        challenge_data['description_html'] = Markup(render_markdown(challenge_data['description']))
+    else:
+        challenge_data['description_html'] = 'You have been assigned to investigate this challenge.'
     
     return render_template('participant/challenge.html', 
-                         challenge=challenge, 
+                         challenge=challenge_data, 
                          questions=safe_questions)
 
 @participant_bp.route('/api/c/<slug>/check', methods=['POST'])
