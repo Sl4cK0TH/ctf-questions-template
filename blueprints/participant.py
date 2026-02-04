@@ -1,14 +1,34 @@
 from flask import Blueprint, render_template, request, jsonify
 from markupsafe import Markup
 import models
+import re
 from utils import render_markdown
 
 participant_bp = Blueprint('participant', __name__)
+
+def strip_html_tags(text):
+    """Remove HTML tags and markdown formatting for plain text preview."""
+    if not text:
+        return ''
+    # Remove HTML tags
+    clean = re.sub(r'<[^>]+>', '', text)
+    # Remove markdown formatting
+    clean = re.sub(r'\*\*(.+?)\*\*', r'\1', clean)  # bold
+    clean = re.sub(r'\*(.+?)\*', r'\1', clean)      # italic
+    clean = re.sub(r'`(.+?)`', r'\1', clean)        # code
+    clean = re.sub(r'#{1,6}\s*', '', clean)         # headers
+    clean = re.sub(r'\[(.+?)\]\(.+?\)', r'\1', clean)  # links
+    # Collapse whitespace
+    clean = re.sub(r'\s+', ' ', clean).strip()
+    return clean
 
 @participant_bp.route('/')
 def index():
     """List all active challenges."""
     challenges = models.get_all_challenges(active_only=True)
+    # Add plain text preview for cards
+    for c in challenges:
+        c['description_preview'] = strip_html_tags(c.get('description', ''))
     return render_template('participant/index.html', challenges=challenges)
 
 @participant_bp.route('/c/<slug>')

@@ -25,7 +25,7 @@
         <a href="/c/{{ c.slug }}" class="challenge-card-link">
             <div class="challenge-card participant">
                 <h3>{{ c.name }}</h3>
-                <p class="challenge-desc">{{ c.description[:100] }}{{ '...' if c.description|length > 100 else '' }}</p>
+                <p class="challenge-desc">{{ c.description_preview[:120] }}{{ '...' if c.description_preview|length > 120 else '' }}</p>
                 <span class="start-btn">Start Challenge →</span>
             </div>
         </a>
