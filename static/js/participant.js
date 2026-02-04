@@ -1,6 +1,48 @@
 let userAnswers = {};
 let finalFlag = "";
 
+// --- MARKDOWN RENDERING ---
+
+// Sanitizer configuration for DOMPurify
+const sanitizeConfig = {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 
+                   'code', 'pre', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                   'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr', 'span', 'div'],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'target', 'rel']
+};
+
+function renderMarkdown(text) {
+    if (!text) return '';
+    
+    // Configure marked.js
+    if (typeof marked !== 'undefined') {
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+        
+        // Parse markdown
+        let html = marked.parse(text);
+        
+        // Sanitize with DOMPurify
+        if (typeof DOMPurify !== 'undefined') {
+            html = DOMPurify.sanitize(html, sanitizeConfig);
+        }
+        
+        return html;
+    }
+    
+    // Fallback: just escape and return
+    return text;
+}
+
+function initMarkdownContent() {
+    document.querySelectorAll('.markdown-content').forEach(el => {
+        const rawText = el.dataset.raw || el.textContent;
+        el.innerHTML = renderMarkdown(rawText);
+    });
+}
+
 // --- MAIN APP LOGIC ---
 
 function selectQuestion(id) {
@@ -292,3 +334,9 @@ function endTutorial() {
     document.getElementById('panel-welcome').classList.add('active');
     document.querySelectorAll('.q-item').forEach(el => el.classList.remove('active'));
 }
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', function() {
+    // Render markdown content
+    initMarkdownContent();
+});

@@ -8,6 +8,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- DOMPurify for XSS protection -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <!-- SortableJS for drag-and-drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
 
 <body class="admin-page">
@@ -17,7 +23,7 @@
     </div>
 
     <div class="admin-container">
-        <form method="POST" class="challenge-form">
+        <form method="POST" class="challenge-form" id="challenge-form">
             <div class="form-section">
                 <h3>Challenge Details</h3>
 
@@ -35,9 +41,30 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Description (Welcome Text)</label>
-                    <textarea name="description" rows="4"
-                        placeholder="Welcome message shown to participants...">{{ challenge.description if challenge else '' }}</textarea>
+                    <label>
+                        Description (Welcome Text)
+                        <span class="label-hint">Supports Markdown & HTML</span>
+                    </label>
+                    <div class="editor-wrapper">
+                        <div class="editor-toolbar">
+                            <button type="button" class="toolbar-btn active" data-mode="edit" onclick="toggleDescriptionMode('edit')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                                </svg>
+                                Edit
+                            </button>
+                            <button type="button" class="toolbar-btn" data-mode="preview" onclick="toggleDescriptionMode('preview')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                Preview
+                            </button>
+                        </div>
+                        <textarea name="description" id="description-editor" rows="6"
+                            placeholder="Welcome message shown to participants... (Markdown supported)">{{ challenge.description if challenge else '' }}</textarea>
+                        <div id="description-preview" class="markdown-preview" style="display: none;"></div>
+                    </div>
                 </div>
 
                 <div class="form-row">
@@ -64,41 +91,72 @@
                 </div>
                 {% endif %}
 
-                <button type="submit" class="btn btn-submit">{{ 'Save Changes' if challenge else 'Create Challenge'
-                    }}</button>
+                <button type="submit" class="btn btn-submit" id="save-btn">
+                    {{ 'Save Changes' if challenge else 'Create Challenge' }}
+                </button>
             </div>
         </form>
 
         {% if challenge %}
         <div class="form-section questions-section">
-            <h3>Questions</h3>
+            <div class="section-header-flex">
+                <h3>Questions</h3>
+                <div id="save-status" class="save-status"></div>
+            </div>
 
             <div id="questions-list">
                 {% for q in questions %}
-                <div class="question-item" data-id="{{ q.id }}">
+                <div class="question-item" data-id="{{ q.id }}" data-order="{{ q.order_num }}">
                     <div class="question-header">
-                        <span class="drag-handle">⋮⋮</span>
+                        <span class="drag-handle" title="Drag to reorder">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="8" y1="6" x2="16" y2="6"></line>
+                                <line x1="8" y1="12" x2="16" y2="12"></line>
+                                <line x1="8" y1="18" x2="16" y2="18"></line>
+                            </svg>
+                        </span>
                         <span class="q-num">#{{ loop.index }}</span>
-                        <button type="button" class="btn-delete" onclick="deleteQuestion({{ q.id }})">×</button>
+                        <div class="question-actions-header">
+                            <button type="button" class="toolbar-btn small active" data-mode="edit" onclick="toggleQuestionMode({{ q.id }}, 'edit')" title="Edit">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                                </svg>
+                            </button>
+                            <button type="button" class="toolbar-btn small" data-mode="preview" onclick="toggleQuestionMode({{ q.id }}, 'preview')" title="Preview">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                            <button type="button" class="btn-delete" onclick="deleteQuestion({{ q.id }})" title="Delete">×</button>
+                        </div>
                     </div>
                     <div class="question-body">
-                        <input type="text" class="q-text" value="{{ q.question }}" placeholder="Question text...">
-                        <input type="text" class="q-answer" value="{{ q.answer }}" placeholder="Correct answer...">
-                        <select class="q-match">
-                            <option value="exact" {{ 'selected' if q.match_type=='exact' else '' }}>Exact Match</option>
-                            <option value="case_insensitive" {{ 'selected' if q.match_type=='case_insensitive' else ''
-                                }}>Case Insensitive</option>
-                            <option value="contains" {{ 'selected' if q.match_type=='contains' else '' }}>Contains
-                            </option>
-                        </select>
-                        <button type="button" class="btn btn-save-q" onclick="saveQuestion({{ q.id }})">Save</button>
+                        <div class="question-field">
+                            <label>Question <span class="label-hint">Markdown & HTML supported</span></label>
+                            <textarea class="q-text" placeholder="Enter your question..." rows="3">{{ q.question }}</textarea>
+                            <div class="q-text-preview markdown-preview" style="display: none;"></div>
+                        </div>
+                        <div class="answer-row">
+                            <div class="answer-field">
+                                <label>Answer</label>
+                                <input type="text" class="q-answer" value="{{ q.answer }}" placeholder="Correct answer...">
+                            </div>
+                            <div class="match-field">
+                                <label>Match Type</label>
+                                <select class="q-match">
+                                    <option value="exact" {{ 'selected' if q.match_type=='exact' else '' }}>Exact Match</option>
+                                    <option value="case_insensitive" {{ 'selected' if q.match_type=='case_insensitive' else '' }}>Case Insensitive</option>
+                                    <option value="contains" {{ 'selected' if q.match_type=='contains' else '' }}>Contains</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
 
-            <button type="button" class="btn btn-add" onclick="addQuestion()" style="margin-top: 15px;">+ Add
-                Question</button>
+            <button type="button" class="btn btn-add" onclick="addQuestion()" style="margin-top: 15px;">+ Add Question</button>
         </div>
 
         <div class="form-section danger-zone">

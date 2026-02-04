@@ -130,4 +130,48 @@ def create_admin_blueprint():
         models.reorder_questions(orders)
         return jsonify({'success': True})
     
+    @admin_bp.route('/api/challenge/<int:challenge_id>/questions/bulk', methods=['POST'])
+    @login_required
+    def bulk_save_questions(challenge_id):
+        """Save all questions at once (create new, update existing, delete removed)."""
+        data = request.json
+        questions = data.get('questions', [])
+        
+        # Get existing question IDs
+        existing_questions = models.get_questions_by_challenge(challenge_id)
+        existing_ids = {q['id'] for q in existing_questions}
+        
+        # Track which IDs are in the submitted data
+        submitted_ids = {q['id'] for q in questions if q['id'] is not None}
+        
+        # Delete questions that were removed
+        ids_to_delete = existing_ids - submitted_ids
+        for qid in ids_to_delete:
+            models.delete_question(qid)
+        
+        # Create or update questions
+        new_ids = []
+        for q in questions:
+            if q['id'] is None:
+                # Create new question
+                new_id = models.create_question(
+                    challenge_id=challenge_id,
+                    question=q['question'],
+                    answer=q['answer'],
+                    match_type=q.get('match_type', 'exact'),
+                    order_num=q.get('order_num', 0)
+                )
+                new_ids.append(new_id)
+            else:
+                # Update existing question
+                models.update_question(
+                    question_id=q['id'],
+                    question=q['question'],
+                    answer=q['answer'],
+                    match_type=q.get('match_type', 'exact'),
+                    order_num=q.get('order_num', 0)
+                )
+        
+        return jsonify({'success': True, 'ids': new_ids})
+    
     return admin_bp
