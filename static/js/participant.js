@@ -1,6 +1,17 @@
 let userAnswers = {};
 let finalFlag = "";
 
+// --- SYNTAX HIGHLIGHTING ---
+
+function highlightCode() {
+    // Apply highlight.js to all code blocks
+    if (typeof hljs !== 'undefined') {
+        document.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightElement(block);
+        });
+    }
+}
+
 // --- MAIN APP LOGIC ---
 
 function selectQuestion(id) {
@@ -292,3 +303,9 @@ function endTutorial() {
     document.getElementById('panel-welcome').classList.add('active');
     document.querySelectorAll('.q-item').forEach(el => el.classList.remove('active'));
 }
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', function() {
+    // Apply syntax highlighting to code blocks
+    highlightCode();
+});

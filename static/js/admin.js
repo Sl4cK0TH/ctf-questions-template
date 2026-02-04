@@ -43,6 +43,16 @@ async function renderMarkdown(text) {
     return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// Apply syntax highlighting to code blocks
+function highlightCode(container) {
+    if (typeof hljs !== 'undefined') {
+        const blocks = container ? container.querySelectorAll('pre code') : document.querySelectorAll('pre code');
+        blocks.forEach((block) => {
+            hljs.highlightElement(block);
+        });
+    }
+}
+
 // ========================================
 // DESCRIPTION EDITOR
 // ========================================
@@ -63,6 +73,7 @@ async function toggleDescriptionMode(mode) {
         
         const html = await renderMarkdown(editor.value);
         preview.innerHTML = html || '<span class="preview-empty">Nothing to preview</span>';
+        highlightCode(preview);
     } else {
         editor.style.display = 'block';
         preview.style.display = 'none';
@@ -92,6 +103,7 @@ async function toggleQuestionMode(questionId, mode) {
         
         const html = await renderMarkdown(textarea.value);
         preview.innerHTML = html || '<span class="preview-empty">Nothing to preview</span>';
+        highlightCode(preview);
     } else {
         textarea.style.display = 'block';
         preview.style.display = 'none';

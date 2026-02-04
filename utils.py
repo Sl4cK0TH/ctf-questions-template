@@ -17,6 +17,9 @@ ALLOWED_ATTRIBUTES = {
     'img': ['src', 'alt', 'title', 'width', 'height'],
     'abbr': ['title'],
     'acronym': ['title'],
+    'code': ['class'],  # Allow class for language detection (e.g., language-python)
+    'pre': ['class'],
+    'span': ['class'],  # For syntax highlighting spans
 }
 
 # Markdown extensions to enable
@@ -25,8 +28,14 @@ MD_EXTENSIONS = [
     'tables',           # | tables |
     'nl2br',            # newlines to <br>
     'sane_lists',       # better list handling
-    'codehilite',       # code syntax highlighting
 ]
+
+# Extension configs
+MD_EXTENSION_CONFIGS = {
+    'fenced_code': {
+        'lang_prefix': 'language-'  # This makes it compatible with highlight.js
+    }
+}
 
 
 def render_markdown(text):
@@ -42,8 +51,11 @@ def render_markdown(text):
     if not text:
         return ''
     
-    # Convert markdown to HTML
-    md = markdown.Markdown(extensions=MD_EXTENSIONS)
+    # Convert markdown to HTML with extension configs
+    md = markdown.Markdown(
+        extensions=MD_EXTENSIONS,
+        extension_configs=MD_EXTENSION_CONFIGS
+    )
     html = md.convert(text)
     
     # Sanitize HTML to prevent XSS
