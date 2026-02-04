@@ -7,22 +7,6 @@
 // Get admin URL prefix from the current page URL
 const adminUrlPrefix = window.location.pathname.split('/').slice(0, 2).join('/');
 
-// Configure marked.js for safe rendering
-if (typeof marked !== 'undefined') {
-    marked.setOptions({
-        breaks: true,
-        gfm: true
-    });
-}
-
-// Sanitizer configuration for DOMPurify
-const sanitizeConfig = {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 
-                   'code', 'pre', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                   'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr', 'span', 'div'],
-    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'target', 'rel']
-};
-
 // ========================================
 // STATE MANAGEMENT
 // ========================================
@@ -32,28 +16,38 @@ let questionData = {}; // Store question data locally
 let sortableInstance = null;
 
 // ========================================
-// MARKDOWN RENDERING
+// MARKDOWN PREVIEW (Server-side)
 // ========================================
 
-function renderMarkdown(text) {
-    if (!text) return '';
+async function renderMarkdown(text) {
+    if (!text || !text.trim()) return '';
     
-    // Parse markdown with marked.js
-    let html = marked.parse(text);
-    
-    // Sanitize with DOMPurify
-    if (typeof DOMPurify !== 'undefined') {
-        html = DOMPurify.sanitize(html, sanitizeConfig);
+    try {
+        const response = await fetch(`${adminUrlPrefix}/api/preview`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: text })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            return data.html;
+        }
+    } catch (error) {
+        console.error('Preview error:', error);
     }
     
-    return html;
+    // Fallback: escape HTML and return
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // ========================================
 // DESCRIPTION EDITOR
 // ========================================
 
-function toggleDescriptionMode(mode) {
+async function toggleDescriptionMode(mode) {
     const editor = document.getElementById('description-editor');
     const preview = document.getElementById('description-preview');
     const toolbar = editor.closest('.editor-wrapper').querySelector('.editor-toolbar');
@@ -63,9 +57,12 @@ function toggleDescriptionMode(mode) {
     });
     
     if (mode === 'preview') {
-        preview.innerHTML = renderMarkdown(editor.value) || '<span class="preview-empty">Nothing to preview</span>';
+        preview.innerHTML = '<span class="preview-loading">Loading preview...</span>';
         editor.style.display = 'none';
         preview.style.display = 'block';
+        
+        const html = await renderMarkdown(editor.value);
+        preview.innerHTML = html || '<span class="preview-empty">Nothing to preview</span>';
     } else {
         editor.style.display = 'block';
         preview.style.display = 'none';
@@ -76,7 +73,7 @@ function toggleDescriptionMode(mode) {
 // QUESTION MANAGEMENT
 // ========================================
 
-function toggleQuestionMode(questionId, mode) {
+async function toggleQuestionMode(questionId, mode) {
     const item = document.querySelector(`.question-item[data-id="${questionId}"]`);
     if (!item) return;
     
@@ -89,9 +86,12 @@ function toggleQuestionMode(questionId, mode) {
     });
     
     if (mode === 'preview') {
-        preview.innerHTML = renderMarkdown(textarea.value) || '<span class="preview-empty">Nothing to preview</span>';
+        preview.innerHTML = '<span class="preview-loading">Loading preview...</span>';
         textarea.style.display = 'none';
         preview.style.display = 'block';
+        
+        const html = await renderMarkdown(textarea.value);
+        preview.innerHTML = html || '<span class="preview-empty">Nothing to preview</span>';
     } else {
         textarea.style.display = 'block';
         preview.style.display = 'none';

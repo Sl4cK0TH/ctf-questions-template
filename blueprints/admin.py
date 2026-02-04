@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, jsonify, session, redirec
 from functools import wraps
 from config import Config
 import models
+from utils import render_markdown
 
 def create_admin_blueprint():
     """Create admin blueprint with dynamic URL prefix."""
@@ -173,5 +174,14 @@ def create_admin_blueprint():
                 )
         
         return jsonify({'success': True, 'ids': new_ids})
+    
+    @admin_bp.route('/api/preview', methods=['POST'])
+    @login_required
+    def preview_markdown():
+        """Render markdown to HTML for preview."""
+        data = request.json
+        text = data.get('text', '')
+        html = render_markdown(text)
+        return jsonify({'html': html})
     
     return admin_bp

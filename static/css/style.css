@@ -1167,6 +1167,32 @@ body.admin-page {
     line-height: 1.7;
 }
 
+.markdown-preview .preview-empty,
+.markdown-preview .preview-loading {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.markdown-preview .preview-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.markdown-preview .preview-loading::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 .markdown-preview h1,
 .markdown-preview h2,
 .markdown-preview h3,
