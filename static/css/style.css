@@ -184,8 +184,10 @@ body::before {
     display: flex;
     flex: 1;
     height: calc(100vh - 70px);
+    min-height: 0;
     position: relative;
     z-index: 1;
+    overflow: hidden;
 }
 
 /* ========================================
@@ -202,8 +204,7 @@ body::before {
     flex-direction: column;
     z-index: 10;
     position: relative;
-    height: 100%;
-    max-height: calc(100vh - 70px);
+    flex-shrink: 0;
     overflow: hidden;
 }
 
@@ -294,7 +295,9 @@ body::before {
 .sidebar-footer {
     padding: 20px;
     border-top: 1px solid var(--border);
-    background: rgba(10, 14, 23, 0.5);
+    background: rgba(10, 14, 23, 0.8);
+    flex-shrink: 0;
+    margin-top: auto;
 }
 
 /* ========================================
