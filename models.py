@@ -109,6 +109,15 @@ def toggle_challenge_active(challenge_id):
     conn.close()
     return new_value
 
+def bulk_set_active(challenge_ids, is_active):
+    """Set is_active for multiple challenges at once."""
+    conn = get_db()
+    cursor = conn.cursor()
+    for cid in challenge_ids:
+        cursor.execute('UPDATE challenges SET is_active = ? WHERE id = ?', (is_active, cid))
+    conn.commit()
+    conn.close()
+
 def delete_challenge(challenge_id):
     conn = get_db()
     cursor = conn.cursor()

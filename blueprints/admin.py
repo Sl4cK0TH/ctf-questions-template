@@ -90,6 +90,18 @@ def create_admin_blueprint():
             return jsonify({'error': 'Challenge not found'}), 404
         return jsonify({'success': True, 'is_active': new_value})
     
+    # Bulk set status API
+    @admin_bp.route('/api/challenges/bulk-status', methods=['POST'])
+    @login_required
+    def bulk_set_status():
+        data = request.json
+        ids = data.get('ids', [])
+        is_active = int(data.get('is_active', 1))
+        if not ids:
+            return jsonify({'error': 'No challenges selected'}), 400
+        models.bulk_set_active(ids, is_active)
+        return jsonify({'success': True, 'is_active': is_active})
+    
     # Question API endpoints
     @admin_bp.route('/api/challenge/<int:challenge_id>/questions', methods=['GET'])
     @login_required

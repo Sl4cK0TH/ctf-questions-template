@@ -19,31 +19,60 @@
     <div class="admin-container">
         <div class="admin-header">
             <h2>Challenges</h2>
-            <a href="{{ url_for('admin.new_challenge') }}" class="btn btn-submit">+ New Challenge</a>
+            <div class="header-actions">
+                <!-- Bulk action controls (hidden until selection) -->
+                <div class="bulk-actions" id="bulk-actions" style="display: none;">
+                    <span class="bulk-count" id="bulk-count">0 selected</span>
+                    <select id="bulk-status-select" class="bulk-select">
+                        <option value="" disabled selected>Set Status…</option>
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                    <button type="button" class="btn btn-bulk-apply" id="bulk-apply-btn" onclick="applyBulkStatus()">
+                        Apply
+                    </button>
+                    <button type="button" class="btn btn-bulk-cancel" onclick="clearSelection()">
+                        Cancel
+                    </button>
+                </div>
+                <a href="{{ url_for('admin.new_challenge') }}" class="btn btn-submit">+ New Challenge</a>
+            </div>
         </div>
 
         <div class="challenge-list">
             {% if challenges %}
             {% for c in challenges %}
             <div class="challenge-card{% if not c.is_active %} dimmed{% endif %}" id="card-{{ c.id }}">
-                <div class="challenge-info">
-                    <h3>{{ c.name }}</h3>
-                    <span class="slug">/c/{{ c.slug }}</span>
-                    <span class="status {% if c.is_active %}active{% else %}inactive{% endif %}" id="status-{{ c.id }}">
-                        {{ 'Active' if c.is_active else 'Inactive' }}
-                    </span>
+                <div class="card-left">
+                    <label class="checkbox-wrapper" onclick="event.stopPropagation()">
+                        <input type="checkbox" class="challenge-checkbox" data-id="{{ c.id }}"
+                            onchange="updateSelection()">
+                        <span class="checkbox-custom"></span>
+                    </label>
+                    <div class="challenge-info">
+                        <h3>{{ c.name }}</h3>
+                        <span class="slug">/c/{{ c.slug }}</span>
+                        <span class="status {% if c.is_active %}active{% else %}inactive{% endif %}"
+                            id="status-{{ c.id }}">
+                            {{ 'Active' if c.is_active else 'Inactive' }}
+                        </span>
+                    </div>
                 </div>
                 <div class="challenge-actions">
                     <button type="button" class="btn btn-visibility" id="vis-{{ c.id }}"
-                        onclick="toggleVisibility({{ c.id }})" title="{{ 'Hide from participants' if c.is_active else 'Show to participants' }}">
+                        onclick="toggleVisibility({{ c.id }})"
+                        title="{{ 'Hide from participants' if c.is_active else 'Show to participants' }}">
                         {% if c.is_active %}
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>
                         {% else %}
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94">
+                            </path>
                             <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path>
                             <line x1="1" y1="1" x2="23" y2="23"></line>
                             <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"></path>
@@ -69,57 +98,122 @@
     </div>
 
     <script>
-    const ADMIN_PREFIX = "{{ url_for('admin.dashboard') }}".replace(/\/$/, '');
+        const ADMIN_PREFIX = "{{ url_for('admin.dashboard') }}".replace(/\/$/, '');
 
-    const EYE_OPEN = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        const EYE_OPEN = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
         <circle cx="12" cy="12" r="3"></circle>
     </svg>`;
 
-    const EYE_CLOSED = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        const EYE_CLOSED = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path>
         <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path>
         <line x1="1" y1="1" x2="23" y2="23"></line>
         <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"></path>
     </svg>`;
 
-    async function toggleVisibility(challengeId) {
-        const btn = document.getElementById('vis-' + challengeId);
-        const card = document.getElementById('card-' + challengeId);
-        const status = document.getElementById('status-' + challengeId);
+        /* ---- Single toggle ---- */
+        async function toggleVisibility(challengeId) {
+            const btn = document.getElementById('vis-' + challengeId);
+            const card = document.getElementById('card-' + challengeId);
+            const status = document.getElementById('status-' + challengeId);
 
-        btn.disabled = true;
-        btn.style.opacity = '0.5';
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
 
-        try {
-            const res = await fetch(ADMIN_PREFIX + '/api/challenge/' + challengeId + '/toggle-active', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await res.json();
+            try {
+                const res = await fetch(ADMIN_PREFIX + '/api/challenge/' + challengeId + '/toggle-active', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
 
-            if (data.success) {
-                if (data.is_active) {
-                    btn.innerHTML = EYE_OPEN;
-                    btn.title = 'Hide from participants';
-                    card.classList.remove('dimmed');
-                    status.className = 'status active';
-                    status.textContent = 'Active';
-                } else {
-                    btn.innerHTML = EYE_CLOSED;
-                    btn.title = 'Show to participants';
-                    card.classList.add('dimmed');
-                    status.className = 'status inactive';
-                    status.textContent = 'Inactive';
+                if (data.success) {
+                    applyCardState(challengeId, data.is_active);
                 }
+            } catch (err) {
+                console.error('Toggle failed:', err);
+            } finally {
+                btn.disabled = false;
+                btn.style.opacity = '1';
             }
-        } catch (err) {
-            console.error('Toggle failed:', err);
-        } finally {
-            btn.disabled = false;
-            btn.style.opacity = '1';
         }
-    }
+
+        /* ---- Shared card state updater ---- */
+        function applyCardState(challengeId, isActive) {
+            const btn = document.getElementById('vis-' + challengeId);
+            const card = document.getElementById('card-' + challengeId);
+            const status = document.getElementById('status-' + challengeId);
+
+            if (isActive) {
+                if (btn) { btn.innerHTML = EYE_OPEN; btn.title = 'Hide from participants'; }
+                card.classList.remove('dimmed');
+                status.className = 'status active';
+                status.textContent = 'Active';
+            } else {
+                if (btn) { btn.innerHTML = EYE_CLOSED; btn.title = 'Show to participants'; }
+                card.classList.add('dimmed');
+                status.className = 'status inactive';
+                status.textContent = 'Inactive';
+            }
+        }
+
+        /* ---- Selection / Bulk ---- */
+        function getSelectedIds() {
+            return Array.from(document.querySelectorAll('.challenge-checkbox:checked'))
+                .map(cb => parseInt(cb.dataset.id));
+        }
+
+        function updateSelection() {
+            const ids = getSelectedIds();
+            const bulkBar = document.getElementById('bulk-actions');
+            const countEl = document.getElementById('bulk-count');
+
+            if (ids.length > 0) {
+                bulkBar.style.display = 'flex';
+                countEl.textContent = ids.length + ' selected';
+            } else {
+                bulkBar.style.display = 'none';
+            }
+            // Reset dropdown
+            document.getElementById('bulk-status-select').selectedIndex = 0;
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.challenge-checkbox').forEach(cb => cb.checked = false);
+            updateSelection();
+        }
+
+        async function applyBulkStatus() {
+            const ids = getSelectedIds();
+            const select = document.getElementById('bulk-status-select');
+            const isActive = parseInt(select.value);
+
+            if (ids.length === 0 || isNaN(isActive)) return;
+
+            const applyBtn = document.getElementById('bulk-apply-btn');
+            applyBtn.disabled = true;
+            applyBtn.textContent = 'Applying…';
+
+            try {
+                const res = await fetch(ADMIN_PREFIX + '/api/challenges/bulk-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: ids, is_active: isActive })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    ids.forEach(id => applyCardState(id, isActive));
+                    clearSelection();
+                }
+            } catch (err) {
+                console.error('Bulk update failed:', err);
+            } finally {
+                applyBtn.disabled = false;
+                applyBtn.textContent = 'Apply';
+            }
+        }
     </script>
 </body>
 
