@@ -81,6 +81,15 @@ def create_admin_blueprint():
         models.delete_challenge(challenge_id)
         return redirect(url_for('admin.dashboard'))
     
+    # Toggle visibility API
+    @admin_bp.route('/api/challenge/<int:challenge_id>/toggle-active', methods=['POST'])
+    @login_required
+    def toggle_active(challenge_id):
+        new_value = models.toggle_challenge_active(challenge_id)
+        if new_value is None:
+            return jsonify({'error': 'Challenge not found'}), 404
+        return jsonify({'success': True, 'is_active': new_value})
+    
     # Question API endpoints
     @admin_bp.route('/api/challenge/<int:challenge_id>/questions', methods=['GET'])
     @login_required

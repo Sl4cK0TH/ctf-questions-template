@@ -94,6 +94,21 @@ def update_challenge(challenge_id, slug, name, description, flag, passing_score,
     conn.commit()
     conn.close()
 
+def toggle_challenge_active(challenge_id):
+    """Toggle is_active between 0 and 1. Returns the new value."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT is_active FROM challenges WHERE id = ?', (challenge_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        return None
+    new_value = 0 if row['is_active'] else 1
+    cursor.execute('UPDATE challenges SET is_active = ? WHERE id = ?', (new_value, challenge_id))
+    conn.commit()
+    conn.close()
+    return new_value
+
 def delete_challenge(challenge_id):
     conn = get_db()
     cursor = conn.cursor()
