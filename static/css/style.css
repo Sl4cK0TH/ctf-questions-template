@@ -1074,6 +1074,8 @@ body.admin-page {
     display: flex;
     gap: 12px;
     align-items: center;
+    position: relative;
+    z-index: 5;
 }
 
 .challenge-actions .btn-edit-admin {
@@ -1123,6 +1125,8 @@ body.admin-page {
     cursor: pointer;
     transition: var(--transition-normal);
     flex-shrink: 0;
+    position: relative;
+    z-index: 10;
 }
 
 .btn-visibility:hover {
