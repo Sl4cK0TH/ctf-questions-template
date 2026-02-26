@@ -59,7 +59,7 @@
                     </div>
                 </div>
                 <div class="challenge-actions">
-                    <button type="button" class="btn btn-visibility" id="vis-{{ c.id }}"
+                    <button type="button" class="btn-visibility" id="vis-{{ c.id }}"
                         onclick="toggleVisibility({{ c.id }})"
                         title="{{ 'Hide from participants' if c.is_active else 'Show to participants' }}">
                         {% if c.is_active %}

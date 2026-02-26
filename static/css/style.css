@@ -967,7 +967,15 @@ body.admin-page {
 }
 
 .checkbox-wrapper input[type="checkbox"] {
-    display: none;
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    position: absolute !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 .checkbox-custom {
@@ -1101,7 +1109,7 @@ body.admin-page {
     box-shadow: 0 0 15px var(--error-glow);
 }
 
-.challenge-actions .btn-visibility {
+.btn-visibility {
     background: transparent;
     color: var(--text-muted);
     border: 1px solid var(--border);
@@ -1114,9 +1122,10 @@ body.admin-page {
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: var(--transition-normal);
+    flex-shrink: 0;
 }
 
-.challenge-actions .btn-visibility:hover {
+.btn-visibility:hover {
     color: var(--accent);
     border-color: var(--accent);
     background: rgba(34, 211, 238, 0.1);
